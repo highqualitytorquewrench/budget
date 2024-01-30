@@ -63,30 +63,31 @@
         const expenses = {};
 
         function addNewExpense() {
-            const name = document.getElementById('newExpenseName').value.trim();
-            const amount = parseFloat(document.getElementById('newExpenseAmount').value) || 0;
-            if (name && !expenses.hasOwnProperty(name)) {
-                expenses[name] = amount;
-                createExpenseInput(name);
-                updateTotal();
-                updateChart();
-            } else {
-                // Handle errors for duplicate names or empty input
-                alert('Please enter a unique name for the expense.');
-            }
-            document.getElementById('newExpenseName').value = '';
-            document.getElementById('newExpenseAmount').value = '';
-        }
+    const name = document.getElementById('newExpenseName').value.trim();
+    const amount = parseFloat(document.getElementById('newExpenseAmount').value) || 0;
+    if (name && !expenses.hasOwnProperty(name)) {
+        expenses[name] = amount;
+        createExpenseInput(name, amount); // Pass the amount here
+        updateTotal();
+        updateChart();
+    } else {
+        // Handle errors for duplicate names or empty input
+        alert('Please enter a unique name for the expense.');
+    }
+    document.getElementById('newExpenseName').value = '';
+    document.getElementById('newExpenseAmount').value = '';
+}
 
-        function createExpenseInput(name) {
-            const expenseDiv = document.createElement('div');
-            expenseDiv.className = 'expense';
-            expenseDiv.innerHTML = `
-                <label for="expense-${name}">${name}:</label>
-                <input type="number" id="expense-${name}" onchange="updateExpense('${name}', this.value)">
-            `;
-            document.getElementById('expensesList').appendChild(expenseDiv);
-        }
+        function createExpenseInput(name, value) {
+    const expenseDiv = document.createElement('div');
+    expenseDiv.className = 'expense';
+    expenseDiv.innerHTML = `
+        <label for="expense-${name}">${name}:</label>
+        <input type="number" id="expense-${name}" value="${value.toFixed(2)}" onchange="updateExpense('${name}', this.value)">
+    `;
+    document.getElementById('expensesList').appendChild(expenseDiv);
+}
+
 
         function updateExpense(name, value) {
             expenses[name] = parseFloat(value) || 0;
