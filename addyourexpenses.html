@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Budget Planner</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .budget-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 300px; /* Adjust width as needed */
+            margin: auto;
+        }
+        .expense, .total {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .expense label, .total label {
+            flex-basis: 60%; /* Adjust label width as needed */
+        }
+        .expense input, .total input {
+            flex-basis: 40%; /* Adjust input field width as needed */
+            text-align: right;
+        }
+        .chart-section {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px; /* Adjust chart width as needed */
+            margin: auto;
+        }
+        canvas {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="budget-container">
+        <!-- Dynamic expense entries will be added here -->
+        <div id="expensesList"></div>
+        
+        <!-- Inputs for adding a new expense -->
+        <div class="expense">
+            <label for="newExpenseName">Expense Name:</label>
+            <input type="text" id="newExpenseName">
+        </div>
+        <div class="expense">
+            <label for="newExpenseAmount">Amount:</label>
+            <input type="number" id="newExpenseAmount">
+        </div>
+        <button onclick="addNewExpense()">Add Expense</button>
+        
+        <div class="total">
+            <label>Total:</label>
+            <input type="text" id="totalExpenses" readonly>
+        </div>
+    </div>
+    <div class="chart-section">
+        <canvas id="budgetChart"></canvas>
+    </div>
+
+    <script>
+        let chartInstance = null;
+        const expenses = {};
+
+        function addNewExpense() {
+            const name = document.getElementById('newExpenseName').value.trim();
+            const amount = parseFloat(document.getElementById('newExpenseAmount').value) || 0;
+            if (name && !expenses.hasOwnProperty(name)) {
+                expenses[name] = amount;
+                createExpenseInput(name);
+                updateTotal();
+                updateChart();
+            } else {
+                // Handle errors for duplicate names or empty input
+                alert('Please enter a unique name for the expense.');
+            }
+            document.getElementById('newExpenseName').value = '';
+            document.getElementById('newExpenseAmount').value = '';
+        }
+
+        function createExpenseInput(name) {
+            const expenseDiv = document.createElement('div');
+            expenseDiv.className = 'expense';
+            expenseDiv.innerHTML = `
+                <label for="expense-${name}">${name}:</label>
+                <input type="number" id="expense-${name}" onchange="updateExpense('${name}', this.value)">
+            `;
+            document.getElementById('expensesList').appendChild(expenseDiv);
+        }
+
+        function updateExpense(name, value) {
+            expenses[name] = parseFloat(value) || 0;
+            updateTotal();
+            updateChart();
+        }
+
+        function updateTotal() {
+            const total = Object.values(expenses).reduce((acc, cur) => acc + cur, 0);
+            document.getElementById('totalExpenses').value = `$${total.toFixed(2)}`;
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('budgetChart').getContext('2d');
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            chartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(expenses),
+                    datasets: [{
+                        data: Object.values(expenses),
+                        backgroundColor: [
+                            /* Defining a large array of colors*/
+    '#4B8B3B', // Olive Green
+    '#FFD662', // Soft Yellow
+    '#F08080', // Light Coral
+    '#6A5ACD', // Slate Blue
+    '#20B2AA', // Light Sea Green
+    '#FFB6C1', // Light Pink
+    '#008080', // Teal
+    '#4682B4', // Steel Blue
+    '#9ACD32', // Yellow Green
+    '#40E0D0', // Turquoise
+    '#6495ED', // Cornflower Blue
+    '#A0522D', // Sienna
+    '#FA8072', // Salmon
+    '#7B68EE', // Medium Slate Blue
+    '#D2691E', // Chocolate
+    '#FFA07A', // Light Salmon
+    '#800080', // Purple
+    '#DB7093', // Pale Violet Red
+    '#4169E1', // Royal Blue
+    '#8B4513'  // Saddle Brown
+                        ],
+                    }]
+                },
+                options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            position: 'bottom',
+        },
+        tooltip: {
+            callbacks: {
+                label: function(context) {
+                    let label = context.label || '';
+                    if (label) {
+                        label += ': ';
+                    }
+                    if (context.parsed !== undefined) {
+                        let value = context.parsed;
+                        let total = context.chart._metasets[context.datasetIndex].total;
+                        let percentage = (value / total * 100).toFixed(2) + '%';
+                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+                        label += ' (' + percentage + ')';
+                    }
+                    return label;
+                }
+            }
+        }
+    }
+}
+            });
+        }
+
+        // Initial setup
+        updateTotal();
+        updateChart();
+    </script>
+</body>
+</html>
